@@ -28,7 +28,7 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                withDockerRegistry([ credentialsId: "dockerhub", url: ""]){
+                withDockerRegistry([ credentialsId: "mydockerhub", url: ""]){
                     sh 'docker push nimmika/abc_tech:$BUILD_NUMBER'
                 }
 
