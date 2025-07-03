@@ -8,7 +8,7 @@ pipeline {
         DOCKERFILE_SRC = "${WORKSPACE}/Dockerfile"
         WAR_SRC = "${WORKSPACE}/target/ABCtechnologies-1.0.war"
         ANSIBLE_DIR = "${env.HOME}/ansible-docker-deploy"
-        ANSIBLE_BUILD_DIR = "${env.HOME}/ansible-docker-deploy/build"
+        ANSIBLE_BUILD_DIR = "/ansible-docker-deploy/build"
     }
 
     stages {
