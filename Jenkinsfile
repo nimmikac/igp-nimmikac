@@ -56,7 +56,7 @@ pipeline {
             steps {
                 sh """
                     ansible-playbook -i $ANSIBLE_DIR/inventory $ANSIBLE_DIR/docker_deploy.yml \
-                    -e "image_name=$IMAGE_NAME tag=$TAG container_name=abc_container_$TAG port=8082"
+                    -e "image_name=$IMAGE_NAME tag=$TAG container_name=abc_container_$TAG container_port=8082"
                 """
             }
         }
