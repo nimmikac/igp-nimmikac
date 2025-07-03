@@ -37,7 +37,7 @@ pipeline {
 
         stage('Deploy as container') {
             steps{
-                sh 'docker run -itd -P nimmika/abc_tech:$BUILD_NUMBER'
+                sh 'docker run -itd -p 8081:8080 --name abc_container_$BUILD_NUMBER nimmika/abc_tech:$BUILD_NUMBER'
             }
         }
     }
