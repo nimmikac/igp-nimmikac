@@ -1,63 +1,43 @@
 pipeline {
     agent any
-
-    environment {
-        IMAGE_NAME = "nimmika/abc_tech"
-        TAG = "${BUILD_NUMBER}"
-        WAR_NAME = "abc.war"
-        DOCKERFILE_SRC = "${WORKSPACE}/Dockerfile"
-        WAR_SRC = "${WORKSPACE}/target/ABCtechnologies-1.0.war"
-        ANSIBLE_DIR = "${WORKSPACE}/ansible"
-        ANSIBLE_BUILD_DIR = "${WORKSPACE}/build"
-    }
-
     stages {
         stage('Code Compile') {
             steps {
                 sh 'mvn compile'
             }
         }
-
+        
         stage('Unit Test') {
             steps {
                 sh 'mvn test'
             }
         }
-
+        
         stage('Code Packaging') {
             steps {
                 sh 'mvn package'
             }
         }
 
-        stage('Prepare Docker Build Files for Ansible') {
+        stage('Build Docker Image') {
             steps {
-                sh """
-                    mkdir -p $ANSIBLE_BUILD_DIR
-                    cp $WAR_SRC $ANSIBLE_BUILD_DIR/$WAR_NAME
-                    cp $DOCKERFILE_SRC $ANSIBLE_BUILD_DIR/Dockerfile
-                """
+                sh 'cp /var/lib/jenkins/workspace/$JOB_NAME/target/ABCtechnologies-1.0.war /var/lib/jenkins/workspace/$JOB_NAME/abc.war'
+                sh 'docker build -t nimmika/abc_tech:$BUILD_NUMBER .'
+           }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withDockerRegistry([ credentialsId: "mydockerhub", url: ""]){
+                    sh 'docker push nimmika/abc_tech:$BUILD_NUMBER'
+                }
+
             }
         }
 
-        stage('Build Docker Image (optional)') {
-            steps {
-                echo "Skipping local Docker build — Ansible will handle it"
-            }
-        }
-
-        stage('Push Docker Image (optional)') {
-            steps {
-                echo "Skipping local Docker push — image is built on remote Docker host"
-            }
-        }
-
-        stage('Ansible Deploy to Docker Host') {
-            steps {
-                sh """
-                    ansible-playbook -i $ANSIBLE_DIR/inventory $ANSIBLE_DIR/docker_deploy.yml \
-                    -e "image_name=$IMAGE_NAME tag=$TAG container_name=abc_container_$TAG container_port=8082"
-                """
+        stage('Deploy as container') {
+            steps{
+                sh 'docker run -itd -p 8081:8080 --name abc_container_$BUILD_NUMBER nimmika/abc_tech:$BUILD_NUMBER'
             }
         }
     }
